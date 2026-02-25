@@ -5,7 +5,7 @@ import { useQueue } from "@/components/queue-provider";
 
 function KpiCard({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
   return (
-    <div className={`card transition ${accent ? "bg-brand-600 text-white ring-brand-500" : ""}`}>
+    <div className={`card transition duration-300 ${accent ? "bg-brand-600 text-white ring-brand-500" : "hover:-translate-y-0.5"}`}>
       <p className={`text-sm ${accent ? "text-brand-100" : "text-slate-500"}`}>{label}</p>
       <p className="mt-2 text-2xl font-semibold">{value}</p>
     </div>
@@ -34,7 +34,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <div className="card">
+        <div className="card transition duration-300">
           <p className="text-sm font-medium text-brand-600">Current Patient</p>
           {currentPatient ? (
             <>
@@ -51,7 +51,10 @@ export default function DashboardPage() {
           <p className="text-sm font-medium text-brand-600">Next 3 Patients</p>
           <ul className="mt-3 space-y-2">
             {nextThreePatients.map((patient) => (
-              <li key={patient.id} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
+              <li
+                key={patient.id}
+                className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 transition duration-300 hover:bg-brand-50"
+              >
                 <span className="font-medium">{patient.name}</span>
                 <span className="text-sm text-slate-500">T{patient.token}</span>
               </li>
@@ -59,7 +62,7 @@ export default function DashboardPage() {
           </ul>
           <button
             onClick={moveToNextPatient}
-            className="mt-4 w-full rounded-xl bg-brand-600 px-4 py-2.5 font-medium text-white transition hover:bg-brand-700"
+            className="mt-4 w-full rounded-xl bg-brand-600 px-4 py-2.5 font-medium text-white transition hover:bg-brand-700 active:scale-[0.99]"
           >
             Next Patient
           </button>

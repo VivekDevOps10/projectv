@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { initialPatients } from "@/lib/mockPatients";
 import { Patient, QueueStatus } from "@/lib/types";
 
@@ -17,10 +17,27 @@ type QueueContextShape = {
   updateStatus: (id: number, status: QueueStatus) => void;
 };
 
+const STORAGE_KEY = "opd-queue-v1";
+
 const QueueContext = createContext<QueueContextShape | undefined>(undefined);
 
 export function QueueProvider({ children }: { children: React.ReactNode }) {
   const [patients, setPatients] = useState<Patient[]>(initialPatients);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        setPatients(JSON.parse(stored) as Patient[]);
+      } catch {
+        setPatients(initialPatients);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(patients));
+  }, [patients]);
 
   const currentPatient = patients.find((p) => p.status === "Inside");
   const waitingPatients = patients.filter((p) => p.status === "Waiting");
@@ -30,6 +47,12 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
     setPatients((prev) => {
       const insideId = prev.find((p) => p.status === "Inside")?.id;
       const nextPatient = prev.find((p) => p.status === "Waiting");
+
+      if (!insideId && nextPatient) {
+        return prev.map((patient) =>
+          patient.id === nextPatient.id ? { ...patient, status: "Inside" as QueueStatus } : patient
+        );
+      }
 
       return prev.map((patient) => {
         if (patient.id === insideId) return { ...patient, status: "Done" as QueueStatus };
@@ -49,7 +72,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
           id: prev.length + 1,
           token: nextToken,
           name: name.trim(),
-          status: "Waiting",
+          status: currentPatient ? "Waiting" : "Inside",
           checkInTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
         }
       ];
